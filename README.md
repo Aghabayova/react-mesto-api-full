@@ -41,6 +41,6 @@
 
 ## Домен
 
-http://mesto.students.nomoreparties.xyz/
+mesto.students.nomoreparties.xyz
 
 

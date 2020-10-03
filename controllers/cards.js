@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 const BadRequestErr = require('../errors/bad-request-err');
 const NotFoundErr = require('../errors/not-found-err');
+const AccessErr = require('../errors/access-err');
 
 const getAllCards = (req, res) => {
   Card.find({})
@@ -22,23 +23,22 @@ const createCard = (req, res, next) => {
 };
 
 const deleteCard = (req, res, next) => {
-  Card.findByIdAndDelete(req.params.cardId)
+  Card.findById(req.params.cardId)
     .orFail()
     .catch(() => {
       throw new NotFoundErr({ message: 'Нет карточки с таким id' });
     })
-    .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res
-          .status(404)
-          .send({ message: err.message });
-        return;
+    .then((card) => {
+      if (card.owner.toString() !== req.user._id) {
+        throw new AccessErr({ message: 'Недостаточно прав для этой операции' });
       }
-      res
-        .status(500)
-        .send({ message: 'Ошибка сервера. Повторите попытку позже' });
-    });
+      Card.findByIdAndDelete(req.params.cardId)
+        .then((cardData) => {
+          res.send({ data: cardData });
+        })
+        .catch(next);
+    })
+    .catch(next);
 };
 
 const likeCard = (req, res) => {

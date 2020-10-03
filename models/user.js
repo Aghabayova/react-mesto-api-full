@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 8,
+    select: false,
   },
   name: {
     type: String,
@@ -29,7 +30,7 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     required: true,
-validate: {
+    validate: {
       validator(v) {
         return /^((http|https):\/\/)(www\.)?([a-zA-z0-9.-]+)\.([a-zA-z]+)([a-zA-z0-9%$?/.-]+)?(#)?$/.test(v);
       },

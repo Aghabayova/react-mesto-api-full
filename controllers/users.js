@@ -2,8 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const NotFoundErr = require('../errors/not-found-err');
-//const BadRequestErr = require('../errors/bad-request-err');
-//const ConflictErr = require('../errors/conflict-err');
+const ConflictErr = require('../errors/conflict-err');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -41,6 +40,11 @@ const createUser = (req, res, next) => {
       email,
       password: hash,
     }))
+    .catch((err) => {
+      if (err.name === 'MongoError' || err.code === 11000) {
+        throw new ConflictErr({ message: 'Пользователь с таким email уже зарегистрирован' });
+      } else next(err);
+    })
     .then((user) => res.status(201).send({ data: user }))
     .catch(next);
 };
@@ -106,8 +110,10 @@ const login = (req, res, next) => {
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         { expiresIn: '7d' },
       );
-      // вернём токен
+      // отправим токен, браузер сохранит его в куках
       res.cookie('jwt', token, {
+        // token - наш JWT токен, который мы отправляем
+        maxAge: 3600000 * 24 * 7, // защита от автоматической отправки кук
         httpOnly: true,
         sameSite: true,
       })

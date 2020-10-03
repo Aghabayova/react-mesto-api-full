@@ -37,9 +37,10 @@
 
 ## Публичный IP-адрес
 
+178.154.227.187
 
 ## Домен
 
-
+http://mesto.students.nomoreparties.xyz/
 
 

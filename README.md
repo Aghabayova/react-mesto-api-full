@@ -41,6 +41,6 @@
 
 ## Домен
 
-mesto.students.nomoreparties.xyz
+sam.students.nomoreparties.xyz
 
 

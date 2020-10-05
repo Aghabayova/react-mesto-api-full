@@ -1,7 +1,7 @@
 const Card = require('../models/card');
 const BadRequestErr = require('../errors/bad-request-err');
 const NotFoundErr = require('../errors/not-found-err');
-const AccessErr = require('../errors/access-err');
+// const AccessErr = require('../errors/access-err');
 
 const getAllCards = (req, res) => {
   Card.find({})
@@ -23,60 +23,32 @@ const createCard = (req, res, next) => {
 };
 
 const deleteCard = (req, res, next) => {
-  Card.findById(req.params.cardId)
-    .orFail()
-    .catch(() => {
-      throw new NotFoundErr({ message: 'Нет карточки с таким id' });
-    })
+  Card.findByIdAndDelete(req.params.cardId)
+    .orFail(new NotFoundErr('Нет карточки с таким id или вы не являетесь ее авоторм'))
     .then((card) => {
-      if (card.owner.toString() !== req.user._id) {
-        throw new AccessErr({ message: 'Недостаточно прав для этой операции' });
-      }
-      Card.findByIdAndDelete(req.params.cardId)
-        .then((cardData) => {
-          res.send({ data: cardData });
-        })
-        .catch(next);
+      res
+        .status(200)
+        .send({ message: `${card._id} карточка успешно удалена` });
     })
     .catch(next);
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true })
-    .orFail()
+    .orFail(new NotFoundErr('Нет карточки с таким id'))
     .then((likes) => res.send({ data: likes }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res
-          .status(404)
-          .send({ message: err.message });
-        return;
-      }
-      res
-        .status(500)
-        .send({ message: 'Ошибка сервера. Повторите попытку позже' });
-    });
+    .catch(next);
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true })
-    .orFail()
+    .orFail(new NotFoundErr('Нет карточки с таким id'))
     .then((likes) => res.send({ data: likes }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res
-          .status(404)
-          .send({ message: err.message });
-        return;
-      }
-      res
-        .status(500)
-        .send({ message: 'Ошибка сервера. Повторите попытку позже' });
-    });
+    .catch(next);
 };
 
 module.exports = {

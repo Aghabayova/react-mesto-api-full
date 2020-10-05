@@ -10,7 +10,7 @@ const {
   Joi,
   errors,
 } = require('celebrate');
-const { userRouter, cardsRouter } = require('./routes');
+const { userRouter, cardsRouter, errorRouter } = require('./routes');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
@@ -64,6 +64,7 @@ app.post('/signin', celebrate({
 
 app.use('/users/', auth, userRouter);
 app.use('/cards/', auth, cardsRouter);
+app.use('/*', errorRouter);
 
 app.use((errorLogger)); // подключаем логгер ошибок
 

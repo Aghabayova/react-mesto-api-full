@@ -45,7 +45,14 @@ const createUser = (req, res, next) => {
         throw new ConflictErr({ message: 'Пользователь с таким email уже зарегистрирован' });
       } else next(err);
     })
-    .then((user) => res.status(201).send({ data: user }))
+    .then((user) => res.status(201).send({
+      data: {
+        name: user.name,
+        about: user.about,
+        avatar,
+        email: user.email,
+      },
+    }))
     .catch(next);
 };
 
@@ -58,18 +65,6 @@ const updateUser = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .orFail()
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
-      }
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: err.message });
-        return;
-      } res
-        .status(500)
-        .send({ message: 'Ошибка сервера. Повторите попытку позже' });
-    })
     .then((user) => res.send({ data: user }))
     .catch(next);
 };
@@ -83,18 +78,6 @@ const updateAvatar = (req, res, next) => {
       runValidators: true,
     })
     .orFail()
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
-      }
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: err.message });
-        return;
-      } res
-        .status(500)
-        .send({ message: 'Ошибка сервера. Повторите попытку позже' });
-    })
     .then((newAvatar) => res.send({ data: newAvatar }))
     .catch(next);
 };

@@ -3,12 +3,11 @@ const BadRequestErr = require('../errors/bad-request-err');
 const NotFoundErr = require('../errors/not-found-err');
 // const AccessErr = require('../errors/access-err');
 
-const getAllCards = (req, res) => {
+const getAllCards = (req, res, next) => {
   Card.find({})
     .populate('user')
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500)
-      .send({ message: 'Ошибка сервера. Повторите попытку позже' }));
+    .catch(next);
 };
 
 const createCard = (req, res, next) => {
